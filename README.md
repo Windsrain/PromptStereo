@@ -10,6 +10,7 @@ Huazhong University of Science and Technology, Optics Valley Laboratory
 
 ## 🔄 Update
 
+* **04/15/2026:** Update more versions of PromptStereo.
 * **04/01/2026:** Update the evaluation code.
 
 ## ⚙️ Environment
@@ -44,7 +45,12 @@ Data for evaluation:
 | Model | Link |
 | :-: | :-: |
 | Depth-Anything-V2-Large | [Download 🤗](https://huggingface.co/depth-anything/Depth-Anything-V2-Large/resolve/main/depth_anything_v2_vitl.pth?download=true) |
+| PromptStereo-SceneFlow-192 | [Download 🤗](https://huggingface.co/Windsrain/PromptStereo/tree/main) |
 | PromptStereo-Unlimited-192 | [Download 🤗](https://huggingface.co/Windsrain/PromptStereo/tree/main) |
+| PromptStereo-SceneFlow-576 | [Download 🤗](https://huggingface.co/Windsrain/PromptStereo/tree/main) |
+| PromptStereo-Unlimited-576 | [Download 🤗](https://huggingface.co/Windsrain/PromptStereo/tree/main) |
+
+The SceneFlow checkpoint is retrained and obtains better performance than the paper's version.
 
 ## 📊 Evaluation
 
@@ -52,11 +58,16 @@ Data for evaluation:
 accelerate launch evaluate_stereo.py
 ```
 
+```
+# To evaluate with large disparity
+accelerate launch evaluate_stereo.py checkpoint=checkpoint/unlimited_576.safetensors model.instance.cfg.gwc_max_disp=576
+```
+
 Default settings use bf16 precision with faster speed but a very little performance degration, you can set accelerator.mixed_precision to null to obtain entire performance.
 
 ## 🔔 Notification
 
-Complete demo, training, and fine-tuning code will be released soon. More versions of models such as adapting to large disparity will also be released soon.
+Complete demo, training, and fine-tuning code will be released soon.
 
 ## 🙏 Acknowledgement
 

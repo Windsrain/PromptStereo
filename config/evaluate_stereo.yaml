@@ -8,7 +8,7 @@ max_disp: ${model.instance.cfg.gwc_max_disp}
 
 accelerator:
   _target_: accelerate.Accelerator
-  mixed_precision: null
+  mixed_precision: bf16
   dataloader_config:
     _target_: accelerate.DataLoaderConfiguration
     split_batches: True
