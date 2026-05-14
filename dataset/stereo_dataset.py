@@ -43,6 +43,53 @@ class StereoDataset(torch.utils.data.Dataset):
 
         return self.image_list[index][0], left, right, disp, valid
 
+class SceneFlow(StereoDataset):
+    def __init__(self, aug_params=None, root='/data/datasets/sceneflow', dstype='frames_finalpass', things_test=False, mask=None):
+        super(SceneFlow, self).__init__(sparse=False, aug_params=aug_params, reader=sceneflow_disp_reader, mask=mask)
+        assert os.path.exists(root)
+        self.root = root
+        self.dstype = dstype
+
+        if things_test:
+            self._add_things('TEST')
+        else:
+            self._add_things('TRAIN')
+            self._add_monkaa('TRAIN')
+            self._add_driving('TRAIN')
+
+    def _add_things(self, split='TRAIN'):
+        left_list = sorted(glob(os.path.join(self.root, self.dstype, split, '*/*/left/*.png')))
+        right_list = [img.replace('left', 'right') for img in left_list]
+        disp_list = [img.replace(self.dstype, 'disparity').replace('.png', '.pfm') for img in left_list]
+
+        assert len(left_list) == len(right_list) == len(disp_list)
+
+        for idx, (left, right, disp) in enumerate(zip(left_list, right_list, disp_list)):
+            self.image_list += [[left, right]]
+            self.disp_list += [disp]
+
+    def _add_monkaa(self, split='TRAIN'):
+        left_list = sorted(glob(os.path.join(self.root, self.dstype, split, '*/left/*.png')))
+        right_list = [img.replace('left', 'right') for img in left_list]
+        disp_list = [img.replace(self.dstype, 'disparity').replace('.png', '.pfm') for img in left_list]
+
+        assert len(left_list) == len(right_list) == len(disp_list)
+
+        for idx, (left, right, disp) in enumerate(zip(left_list, right_list, disp_list)):
+            self.image_list += [[left, right]]
+            self.disp_list += [disp]
+
+    def _add_driving(self, split='TRAIN'):
+        left_list = sorted(glob(os.path.join(self.root, self.dstype, split, '*/*/*/left/*.png')))
+        right_list = [img.replace('left', 'right') for img in left_list]
+        disp_list = [img.replace(self.dstype, 'disparity').replace('.png', '.pfm') for img in left_list]
+
+        assert len(left_list) == len(right_list) == len(disp_list)
+
+        for idx, (left, right, disp) in enumerate(zip(left_list, right_list, disp_list)):
+            self.image_list += [[left, right]]
+            self.disp_list += [disp]
+
 class KITTI(StereoDataset):
     def __init__(self, aug_params=None, root='data/datasets/kitti', year='2015', split='training', mask='all'):
         super(KITTI, self).__init__(sparse=True, aug_params=aug_params, reader=kitti_disp_reader, mask=mask)
@@ -153,3 +200,63 @@ class Booster(StereoDataset):
         for _, (left, right) in enumerate(zip(left_list, right_list)):
             self.image_list += [[left, right]]
             self.disp_list += [os.path.join(os.path.dirname(left.replace('camera_00', '')), 'disp_00.npy')]
+
+class FoundationStereo(StereoDataset):
+    def __init__(self, aug_params=None, root='/data/datasets/foundationstereo', mask=None):
+        super().__init__(sparse=False, aug_params=aug_params, reader=foundationstereo_disp_reader, mask=mask)
+        assert os.path.exists(root)
+
+        left_list = sorted(glob(os.path.join(root, '*/dataset/data/left/rgb/*.jpg')))
+        right_list = sorted(glob(os.path.join(root, '*/dataset/data/right/rgb/*.jpg')))
+        disp_list = sorted(glob(os.path.join(root, '*/dataset/data/left/disparity/*.png')))
+
+        assert len(left_list) == len(right_list) == len(disp_list)
+
+        for _, (left, right, disp) in enumerate(zip(left_list, right_list, disp_list)):
+            self.image_list += [[left, right]]
+            self.disp_list += [disp]
+
+class TartanAir(StereoDataset):
+    def __init__(self, aug_params=None, root='/data/datasets/tartanair', mask=None):
+        super().__init__(sparse=False, aug_params=aug_params, reader=tartanair_disp_reader, mask=mask)
+        assert os.path.exists(root)
+
+        left_list = sorted(glob(os.path.join(root, '*/*/*/*/image_left/*.png')))
+        right_list = sorted(glob(os.path.join(root, '*/*/*/*/image_right/*.png')))
+        disp_list = sorted(glob(os.path.join(root, '*/*/*/*/depth_left/*.npy')))
+
+        assert len(left_list) == len(right_list) == len(disp_list)
+
+        for _, (left, right, disp) in enumerate(zip(left_list, right_list, disp_list)):
+            self.image_list += [[left, right]]
+            self.disp_list += [disp]
+
+class CREStereo(StereoDataset):
+    def __init__(self, aug_params=None, root='/data/datasets/crestereo', mask=None):
+        super().__init__(sparse=False, aug_params=aug_params, reader=crestereo_disp_reader, mask=mask)
+        assert os.path.exists(root)
+
+        left_list = sorted(glob(os.path.join(root, '*/*_left.jpg')))
+        right_list = sorted(glob(os.path.join(root, '*/*_right.jpg')))
+        disp_list = sorted(glob(os.path.join(root, '*/*_left.disp.png')))
+
+        assert len(left_list) == len(right_list) == len(disp_list)
+
+        for _, (left, right, disp) in enumerate(zip(left_list, right_list, disp_list)):
+            self.image_list += [[left, right]]
+            self.disp_list += [disp]
+
+class FallingThings(StereoDataset):
+    def __init__(self, aug_params=None, root='/data/datasets/fallingthings', mask=None):
+        super().__init__(sparse=False, aug_params=aug_params, reader=fallingthings_disp_reader, mask=mask)
+        assert os.path.exists(root)
+
+        left_list = sorted(glob(os.path.join(root, '**/*.left.jpg'), recursive=True))
+        right_list = sorted(glob(os.path.join(root, '**/*.right.jpg'), recursive=True))
+        disp_list = sorted(glob(os.path.join(root, '**/*.left.depth.png'), recursive=True))
+
+        assert len(left_list) == len(right_list) == len(disp_list)
+
+        for _, (left, right, disp) in enumerate(zip(left_list, right_list, disp_list)):
+            self.image_list += [[left, right]]
+            self.disp_list += [disp]

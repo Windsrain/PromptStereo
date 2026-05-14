@@ -3,7 +3,8 @@ defaults:
  - _self_
 
 gpus: ${oc.env:CUDA_VISIBLE_DEVICES, '0,1,2,3'}
-checkpoint: /data/wxq/checkpoint/promptstereo-v6/unlimited/final/model.safetensors
+checkpoint: checkpoint/unlimited_192.safetensors
+max_disp: ${model.instance.cfg.gwc_max_disp}
 
 accelerator:
   _target_: accelerate.Accelerator
@@ -19,8 +20,8 @@ dataset:
       root: /data/datasets/middlebury
       year: MiddEval3
       split: training
-      resolution: F
-      mask: all
+      resolution: H
+      mask: noc
 
 dataloader:
   split: True
@@ -33,6 +34,5 @@ dataloader:
     shuffle: False
     drop_last: False
 
-max_disp: 192
-disp_dir: result/middlebury/MiddEval3/trainingH
+disp_dir: result/middlebury/MiddEval3/training/H
 base_index: -2

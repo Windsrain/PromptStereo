@@ -16,6 +16,12 @@ class Augmentor:
         if self.aug_params.random_scale:
             self.scale_prob = self.aug_params.random_scale.scale_prob
 
+    def dilate_transform(self, disp):
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+        disp = cv2.dilate(disp, kernel, iterations=1)
+
+        return disp
+
     def color_transform(self, *images):
         if np.random.rand() < self.aug_params.color_jitter.asymmetric_prob:
             images = [np.array(self.color_jitter(Image.fromarray(img.astype(np.uint8))), dtype=np.float32) for img in images]
@@ -120,6 +126,10 @@ class Augmentor:
         return images
 
     def __call__(self, name, **images):
+        # Dilate SceneFlow Driving subset's disparity to simulate real LiDAR
+        if 'mm_focallength' in name:
+            images['disp'] = self.dilate_transform(images['disp'])
+
         if self.color_jitter:
             images['left'], images['right'] = self.color_transform(images['left'], images['right'])
 

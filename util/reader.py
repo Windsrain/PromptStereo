@@ -38,6 +38,12 @@ def pfm_reader(filename):
 
     return np.ascontiguousarray(data)
 
+def sceneflow_disp_reader(filename, mask):
+    disp = pfm_reader(filename)
+    valid = disp > 0
+
+    return disp, valid.astype(np.float32)
+
 def kitti_disp_reader(filename, mask):
     disp = None
     if mask == 'all':
@@ -100,5 +106,38 @@ def booster_disp_reader(filename, mask):
     disp = np.load(filename).astype(np.float32)
     valid = imageio.imread(filename.replace('disp_00.npy', 'mask_00.png'))
     valid = valid > 0
+
+    return disp, valid.astype(np.float32)
+
+def foundationstereo_disp_reader(filename, mask):
+    disp = imageio.imread(filename).astype(np.float32)
+    disp = (disp[..., 0] * 255 * 255 + disp[..., 1] * 255 + disp[..., 2]) / 1000
+    valid = disp > 0
+
+    return disp, valid.astype(np.float32)
+
+def tartanair_disp_reader(filename, mask):
+    depth = np.load(filename).astype(np.float32)
+    disp = 80 / depth
+    valid = disp > 0
+
+    return disp, valid.astype(np.float32)
+
+def crestereo_disp_reader(filename, mask):
+    disp = imageio.imread(filename).astype(np.float32)
+    disp = disp / 32
+    valid = disp > 0
+
+    return disp, valid.astype(np.float32)
+
+def fallingthings_disp_reader(filename, mask):
+    a = imageio.imread(filename).astype(np.float32)
+
+    with open('/'.join(filename.split('/')[:-1] + ['_camera_settings.json']), 'r') as f:
+        intrinsics = json.load(f)
+        fx = intrinsics['camera_settings'][0]['intrinsic_settings']['fx']
+
+    disp = (fx * 6 * 100) / a
+    valid = disp > 0
 
     return disp, valid.astype(np.float32)
